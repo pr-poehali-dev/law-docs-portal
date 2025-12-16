@@ -6,9 +6,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmitRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Заявка отправлена!",
+      description: "Наш юрист свяжется с вами в ближайшее время.",
+    });
+    setIsDialogOpen(false);
+  };
 
   const services = [
     {
@@ -91,10 +111,65 @@ const Index = () => {
               <button onClick={() => scrollToSection('blog')} className="hover:text-accent transition-colors">Блог</button>
               <button onClick={() => scrollToSection('contact')} className="hover:text-accent transition-colors">Контакты</button>
             </div>
-            <Button variant="secondary" className="hidden md:inline-flex">
-              <Icon name="Phone" size={16} className="mr-2" />
-              +7 (495) 123-45-67
-            </Button>
+            <div className="hidden md:flex items-center gap-3">
+              <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-primary">
+                <Icon name="Phone" size={16} className="mr-2" />
+                +7 (495) 123-45-67
+              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="secondary">
+                    <Icon name="Send" size={16} className="mr-2" />
+                    Оставить заявку
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Заявка на юридическую услугу</DialogTitle>
+                    <DialogDescription>
+                      Заполните форму, и наш специалист свяжется с вами в течение 30 минут
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmitRequest} className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Имя *</label>
+                      <Input required placeholder="Иван Иванов" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Телефон *</label>
+                      <Input required type="tel" placeholder="+7 (___) ___-__-__" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Email</label>
+                      <Input type="email" placeholder="example@mail.ru" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Тип услуги</label>
+                      <select className="w-full px-3 py-2 border rounded-md bg-background">
+                        <option>Договоры</option>
+                        <option>Судебные документы</option>
+                        <option>Корпоративные документы</option>
+                        <option>Недвижимость</option>
+                        <option>Семейное право</option>
+                        <option>Трудовое право</option>
+                        <option>Другое</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Описание задачи</label>
+                      <Textarea placeholder="Кратко опишите вашу ситуацию..." rows={3} />
+                    </div>
+                    <Button type="submit" className="w-full" size="lg">
+                      <Icon name="Send" size={18} className="mr-2" />
+                      Отправить заявку
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center">
+                      Нажимая кнопку, вы соглашаетесь с политикой обработки персональных данных
+                    </p>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </nav>
@@ -113,13 +188,17 @@ const Index = () => {
               Гарантируем соответствие законодательству и защиту ваших интересов.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" onClick={() => scrollToSection('contact')} className="transition-transform hover:scale-105">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="secondary" className="transition-transform hover:scale-105">
+                    <Icon name="Send" size={20} className="mr-2" />
+                    Оставить заявку
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              <Button size="lg" variant="outline" className="bg-transparent border-accent text-accent hover:bg-accent hover:text-primary" onClick={() => scrollToSection('contact')}>
                 <Icon name="Calendar" size={20} className="mr-2" />
                 Записаться на консультацию
-              </Button>
-              <Button size="lg" variant="outline" className="bg-transparent border-accent text-accent hover:bg-accent hover:text-primary">
-                <Icon name="Phone" size={20} className="mr-2" />
-                Бесплатная консультация
               </Button>
             </div>
           </div>
@@ -175,9 +254,43 @@ const Index = () => {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-accent">{service.price}</span>
-                    <Button variant="outline" size="sm" onClick={() => scrollToSection('contact')}>
-                      Заказать
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Заказать
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>{service.title}</DialogTitle>
+                          <DialogDescription>
+                            Заполните форму заявки на услугу
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmitRequest} className="space-y-4 mt-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Имя *</label>
+                            <Input required placeholder="Иван Иванов" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Телефон *</label>
+                            <Input required type="tel" placeholder="+7 (___) ___-__-__" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Email</label>
+                            <Input type="email" placeholder="example@mail.ru" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Описание задачи</label>
+                            <Textarea placeholder="Кратко опишите вашу ситуацию..." rows={3} />
+                          </div>
+                          <Button type="submit" className="w-full" size="lg">
+                            <Icon name="Send" size={18} className="mr-2" />
+                            Отправить заявку
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </CardContent>
               </Card>
