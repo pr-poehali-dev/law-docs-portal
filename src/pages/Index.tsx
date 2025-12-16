@@ -16,18 +16,61 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
+const BACKEND_URL = 'https://functions.poehali.dev/45e7fc60-4d19-4aaa-9e35-bef96fff9c6e';
+
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmitRequest = (e: React.FormEvent) => {
+  const handleSubmitRequest = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Заявка отправлена!",
-      description: "Наш юрист свяжется с вами в ближайшее время.",
-    });
-    setIsDialogOpen(false);
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      phone: formData.get('phone') as string,
+      email: formData.get('email') as string || null,
+      service_type: formData.get('service_type') as string || null,
+      description: formData.get('description') as string || null,
+    };
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: "Заявка отправлена!",
+          description: "Наш юрист свяжется с вами в ближайшее время.",
+        });
+        setIsDialogOpen(false);
+        e.currentTarget.reset();
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось отправить заявку. Попробуйте позже.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Проблема с подключением. Проверьте интернет.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const services = [
@@ -133,19 +176,19 @@ const Index = () => {
                   <form onSubmit={handleSubmitRequest} className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Имя *</label>
-                      <Input required placeholder="Иван Иванов" />
+                      <Input required name="name" placeholder="Иван Иванов" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Телефон *</label>
-                      <Input required type="tel" placeholder="+7 (___) ___-__-__" />
+                      <Input required name="phone" type="tel" placeholder="+7 (___) ___-__-__" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Email</label>
-                      <Input type="email" placeholder="example@mail.ru" />
+                      <Input name="email" type="email" placeholder="example@mail.ru" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Тип услуги</label>
-                      <select className="w-full px-3 py-2 border rounded-md bg-background">
+                      <select name="service_type" className="w-full px-3 py-2 border rounded-md bg-background">
                         <option>Договоры</option>
                         <option>Судебные документы</option>
                         <option>Корпоративные документы</option>
@@ -157,11 +200,11 @@ const Index = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Описание задачи</label>
-                      <Textarea placeholder="Кратко опишите вашу ситуацию..." rows={3} />
+                      <Textarea name="description" placeholder="Кратко опишите вашу ситуацию..." rows={3} />
                     </div>
-                    <Button type="submit" className="w-full" size="lg">
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                       <Icon name="Send" size={18} className="mr-2" />
-                      Отправить заявку
+                      {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
                     </Button>
                     <p className="text-xs text-muted-foreground text-center">
                       Нажимая кнопку, вы соглашаетесь с политикой обработки персональных данных
@@ -270,23 +313,24 @@ const Index = () => {
                         <form onSubmit={handleSubmitRequest} className="space-y-4 mt-4">
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Имя *</label>
-                            <Input required placeholder="Иван Иванов" />
+                            <Input required name="name" placeholder="Иван Иванов" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Телефон *</label>
-                            <Input required type="tel" placeholder="+7 (___) ___-__-__" />
+                            <Input required name="phone" type="tel" placeholder="+7 (___) ___-__-__" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Email</label>
-                            <Input type="email" placeholder="example@mail.ru" />
+                            <Input name="email" type="email" placeholder="example@mail.ru" />
                           </div>
+                          <input type="hidden" name="service_type" value={service.title} />
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Описание задачи</label>
-                            <Textarea placeholder="Кратко опишите вашу ситуацию..." rows={3} />
+                            <Textarea name="description" placeholder="Кратко опишите вашу ситуацию..." rows={3} />
                           </div>
-                          <Button type="submit" className="w-full" size="lg">
+                          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                             <Icon name="Send" size={18} className="mr-2" />
-                            Отправить заявку
+                            {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
                           </Button>
                         </form>
                       </DialogContent>

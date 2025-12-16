@@ -1,0 +1,43 @@
+{
+  "tests": [
+    {
+      "name": "Submit valid request",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван Петров",
+        "phone": "+7 (495) 123-45-67",
+        "email": "ivan@example.com",
+        "service_type": "Договоры",
+        "description": "Нужна помощь с договором купли-продажи"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "Заявка успешно принята"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Submit request without email",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Мария Иванова",
+        "phone": "+7 (926) 555-12-34",
+        "service_type": "Семейное право"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
